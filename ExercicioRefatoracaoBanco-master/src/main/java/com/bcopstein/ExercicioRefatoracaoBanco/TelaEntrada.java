@@ -80,7 +80,8 @@ public class TelaEntrada {
 				TelaOperacoes toper = new TelaOperacoes(mainStage, cenaEntrada,conta,operacoes);
 				Scene scene = toper.getTelaOperacoes();
 				mainStage.setScene(scene);
-			} catch (NumberFormatException ex) {
+			} 
+			catch (NumberFormatException ex) {
 				Alert alert = new Alert(AlertType.WARNING);
 				alert.setTitle("Conta inválida !!");
 				alert.setHeaderText(null);

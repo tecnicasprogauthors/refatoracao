@@ -1,6 +1,7 @@
 package com.bcopstein.ExercicioRefatoracaoBanco;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -72,7 +73,7 @@ public class TelaOperacoes
         				.stream()
         				.filter(op -> op.getNumeroConta() == this.conta.getNumero())
         				.collect(Collectors.toList())
-        				);
+						);
         
         ListView<Operacao> extrato = new ListView<>(operacoesConta);
         extrato.setPrefHeight(140);
@@ -103,18 +104,22 @@ public class TelaOperacoes
         hbBtn.getChildren().add(btnDebito);
         hbBtn.getChildren().add(btnVoltar);
         grid.add(hbBtn, 1, 2);
-        
+		
+		Button btnEstatistica = new Button("Tela de estatistica");
+		grid.add(btnEstatistica, 1, 5);
+
         btnCredito.setOnAction(e->{
         	try {
         	  double valor = Integer.parseInt(tfValorOperacao.getText());
         	  if (valor < 0.0) {
         		  throw new NumberFormatException("Valor invalido");
         	  }
-        	  conta.deposito(valor, GregorianCalendar.DAY_OF_MONTH);
-        	  GregorianCalendar date = new GregorianCalendar();
+			  conta.deposito(valor, GregorianCalendar.DAY_OF_MONTH);
+			  GregorianCalendar date = new GregorianCalendar();
+			  System.out.println(date.get(GregorianCalendar.MONTH+1));
         	  Operacao op = new Operacao(
         			  date.get(GregorianCalendar.DAY_OF_MONTH),
-        			  date.get(GregorianCalendar.MONTH+1),
+        			  date.get(GregorianCalendar.MONTH),
         			  date.get(GregorianCalendar.YEAR),
         			  date.get(GregorianCalendar.HOUR),
         			  date.get(GregorianCalendar.MINUTE),
@@ -162,7 +167,8 @@ public class TelaOperacoes
         	  operacoesConta.add(op);
 				tfSaldo.setText(""+conta.getSaldo());
 				
-          	}catch(NumberFormatException ex) {
+			  }
+			  catch(NumberFormatException ex) {
   				Alert alert = new Alert(AlertType.WARNING);
   				alert.setTitle("Valor inválido !!");
   				alert.setHeaderText(null);
@@ -170,7 +176,19 @@ public class TelaOperacoes
 
   				alert.showAndWait();
           	}        	
-        });
+		});
+		
+		btnEstatistica.setOnAction(e -> {
+			List list = new ArrayList<Operacao>();
+			for (Operacao op : operacoesConta)
+			{
+				list.add(op);
+			}
+			GregorianCalendar date = new GregorianCalendar();
+			TelaEstatistica telEst = new TelaEstatistica(conta, list, mainStage, cenaOperacoes, date.get(GregorianCalendar.MONTH), date.get(GregorianCalendar.YEAR));
+			Scene cena = telEst.getTelaEstatistica();
+			mainStage.setScene(cena);
+		});
 
         btnVoltar.setOnAction(e->{
         	mainStage.setScene(cenaEntrada);
