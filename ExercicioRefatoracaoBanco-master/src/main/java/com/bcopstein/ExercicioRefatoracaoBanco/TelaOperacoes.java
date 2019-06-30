@@ -1,5 +1,5 @@
 package com.bcopstein.ExercicioRefatoracaoBanco;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -114,16 +114,15 @@ public class TelaOperacoes
         	  if (valor < 0.0) {
         		  throw new NumberFormatException("Valor invalido");
         	  }
-			  conta.deposito(valor, GregorianCalendar.DAY_OF_MONTH);
-			  GregorianCalendar date = new GregorianCalendar();
-			  System.out.println(date.get(GregorianCalendar.MONTH+1));
+			  conta.deposito(valor, Calendar.DAY_OF_MONTH);
+			  Calendar date = Calendar.getInstance();
         	  Operacao op = new Operacao(
-        			  date.get(GregorianCalendar.DAY_OF_MONTH),
-        			  date.get(GregorianCalendar.MONTH),
-        			  date.get(GregorianCalendar.YEAR),
-        			  date.get(GregorianCalendar.HOUR),
-        			  date.get(GregorianCalendar.MINUTE),
-        			  date.get(GregorianCalendar.SECOND),
+        			  date.get(Calendar.DAY_OF_MONTH),
+        			  date.get(Calendar.MONTH) + 1,
+        			  date.get(Calendar.YEAR),
+        			  date.get(Calendar.HOUR),
+        			  date.get(Calendar.MINUTE),
+        			  date.get(Calendar.SECOND),
         			  conta.getNumero(),
         			  conta.getStatus(),
         			  valor,
@@ -149,15 +148,15 @@ public class TelaOperacoes
           	  if (valor < 0.0 || valor > conta.getSaldo()) throw new NumberFormatException("Saldo insuficiente");
 			  if (valor > conta.getLimiteAtual()) throw new NumberFormatException("Limite diário excedido");
 				
-          	  conta.retirada(valor, GregorianCalendar.DAY_OF_MONTH);
-        	  GregorianCalendar date = new GregorianCalendar();
+          	  conta.retirada(valor, Calendar.DAY_OF_MONTH);
+        	  Calendar date = Calendar.getInstance();
         	  Operacao op = new Operacao(
-        			  date.get(GregorianCalendar.DAY_OF_MONTH),
-        			  date.get(GregorianCalendar.MONTH+1),
-        			  date.get(GregorianCalendar.YEAR),
-        			  date.get(GregorianCalendar.HOUR),
-        			  date.get(GregorianCalendar.MINUTE),
-        			  date.get(GregorianCalendar.SECOND),
+        			  date.get(Calendar.DAY_OF_MONTH),
+        			  date.get(Calendar.MONTH) + 1,
+        			  date.get(Calendar.YEAR),
+        			  date.get(Calendar.HOUR),
+        			  date.get(Calendar.MINUTE),
+        			  date.get(Calendar.SECOND),
         			  conta.getNumero(),
         			  conta.getStatus(),
         			  valor,
@@ -184,8 +183,8 @@ public class TelaOperacoes
 			{
 				list.add(op);
 			}
-			GregorianCalendar date = new GregorianCalendar();
-			TelaEstatistica telEst = new TelaEstatistica(conta, list, mainStage, cenaOperacoes, date.get(GregorianCalendar.MONTH), date.get(GregorianCalendar.YEAR));
+			Calendar date = Calendar.getInstance();
+			TelaEstatistica telEst = new TelaEstatistica(conta, list, mainStage, cenaOperacoes, date.get(Calendar.MONTH) + 1, date.get(Calendar.YEAR));
 			Scene cena = telEst.getTelaEstatistica();
 			mainStage.setScene(cena);
 		});

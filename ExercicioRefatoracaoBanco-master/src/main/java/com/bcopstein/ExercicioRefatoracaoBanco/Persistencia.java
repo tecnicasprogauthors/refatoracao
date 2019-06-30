@@ -13,10 +13,23 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
-public class Persistencia {
+public class Persistencia 
+{
     private final String NomeBDContas = "BDContasBNG.txt";
     private final String NomeBDOperacoes = "BDOperBNG.txt";
-    
+    private static  Persistencia INSTANCE;
+
+    private Persistencia()
+    {
+        
+    }
+
+    public static synchronized Persistencia getInstance()
+    {
+        if (INSTANCE == null) INSTANCE = new Persistencia();
+        return INSTANCE;
+    }
+
     public Map<Integer,Conta> loadContas(){
     	Map<Integer,Conta> contas = new HashMap<>();
     	
