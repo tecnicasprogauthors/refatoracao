@@ -27,19 +27,19 @@ public class TelaOperacoes
 	private Stage mainStage; 
 	private Scene cenaEntrada;
 	private Scene cenaOperacoes;
-	private List<Operacao> operacoes;
+	private Fachada fachada;
 	private ObservableList<Operacao> operacoesConta;
 
-	private Conta conta; 
+	private int conta; 
 
 	private TextField tfValorOperacao;
 	private TextField tfSaldo;
 
-	public TelaOperacoes(Stage mainStage, Scene telaEntrada, Conta conta, List<Operacao> operacoes) { 																					// conta
+	public TelaOperacoes(Stage mainStage, Scene telaEntrada, int conta, Fachada fachada) { 																					// conta
 		this.mainStage = mainStage;
 		this.cenaEntrada = telaEntrada;
 		this.conta = conta;
-		this.operacoes = operacoes;
+		this.fachada = fachada;
 	}
 
 	public Scene getTelaOperacoes() {
@@ -47,15 +47,16 @@ public class TelaOperacoes
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
+		grid.setPadding(new Insets(25, 25, 25, 25));
+		fachada.setContaAtual(conta);
 
-        String dadosCorr = conta.getNumero()+" : "+conta.getCorrentista();
+        String dadosCorr = conta+" : "+fachada.getCorrentista();
         Text scenetitle = new Text(dadosCorr);
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
         
-        String categoria = "Categoria: "+conta.getStrStatus();
-        String limRetDiaria = "Limite retirada diaria: "+conta.getLimRetiradaDiaria();
+        String categoria = "Categoria: "+fachada.getStrStatus();
+        String limRetDiaria = "Limite retirada diaria: "+fachada.getLimiteRetiradaDiaria();
         
         Label cat = new Label(categoria);
         grid.add(cat, 0, 1);
@@ -65,23 +66,15 @@ public class TelaOperacoes
         
         Label tit = new Label("Ultimos movimentos");
         grid.add(tit,0,3);
-
-        // Seleciona apenas o extrato da conta atual
-        operacoesConta = 
-        		FXCollections.observableArrayList(
-        				operacoes
-        				.stream()
-        				.filter(op -> op.getNumeroConta() == this.conta.getNumero())
-        				.collect(Collectors.toList())
-						);
-        
-        ListView<Operacao> extrato = new ListView<>(operacoesConta);
+		
+		operacoesConta = fachada.extrato();
+        ListView<Operacao> extrato = new ListView<Operacao>(operacoesConta);
         extrato.setPrefHeight(140);
         grid.add(extrato, 0, 4);
 
         tfSaldo = new TextField();
         tfSaldo.setDisable(true);
-        tfSaldo.setText(""+conta.getSaldo());
+        tfSaldo.setText(""+fachada.getSaldo());
         HBox valSaldo = new HBox(20);        
         valSaldo.setAlignment(Pos.BOTTOM_LEFT);
         valSaldo.getChildren().add(new Label("Saldo"));
@@ -109,30 +102,22 @@ public class TelaOperacoes
 		grid.add(btnEstatistica, 1, 5);
 
         btnCredito.setOnAction(e->{
-        	try {
+			try 
+			{
         	  double valor = Integer.parseInt(tfValorOperacao.getText());
-        	  if (valor < 0.0) {
-        		  throw new NumberFormatException("Valor invalido");
-        	  }
-			  conta.deposito(valor, Calendar.DAY_OF_MONTH);
 			  Calendar date = Calendar.getInstance();
-        	  Operacao op = new Operacao(
-        			  date.get(Calendar.DAY_OF_MONTH),
-        			  date.get(Calendar.MONTH) + 1,
-        			  date.get(Calendar.YEAR),
-        			  date.get(Calendar.HOUR),
-        			  date.get(Calendar.MINUTE),
-        			  date.get(Calendar.SECOND),
-        			  conta.getNumero(),
-        			  conta.getStatus(),
-        			  valor,
-        			  0);
-              operacoes.add(op);        	  
-			  tfSaldo.setText(""+conta.getSaldo());
-			  cat.setText("Categoria: "+ conta.getStrStatus());
-			  lim.setText("Limite retirada diaria: "+conta.getLimRetiradaDiaria());
-			  operacoesConta.add(op);
-        	}catch(NumberFormatException ex) {
+			  fachada.deposito(valor, date.get(Calendar.DAY_OF_MONTH),
+			  date.get(Calendar.MONTH) + 1,
+			  date.get(Calendar.YEAR),
+			  date.get(Calendar.HOUR),
+			  date.get(Calendar.MINUTE),
+			  date.get(Calendar.SECOND),
+			  0);    	
+			  tfSaldo.setText(""+fachada.getSaldo());
+			  cat.setText("Categoria: "+ fachada.getStrStatus());
+			  lim.setText("Limite retirada diaria: "+fachada.getLimiteRetiradaDiaria());
+			}
+        	catch(NumberFormatException ex) {
 				Alert alert = new Alert(AlertType.WARNING);
 				alert.setTitle("Valor inválido !!");
 				alert.setHeaderText(null);
@@ -145,27 +130,15 @@ public class TelaOperacoes
         btnDebito.setOnAction(e->{
         	try {
           	  double valor = Integer.parseInt(tfValorOperacao.getText());
-          	  if (valor < 0.0 || valor > conta.getSaldo()) throw new NumberFormatException("Saldo insuficiente");
-			  if (valor > conta.getLimiteAtual()) throw new NumberFormatException("Limite diário excedido");
-				
-          	  conta.retirada(valor, Calendar.DAY_OF_MONTH);
         	  Calendar date = Calendar.getInstance();
-        	  Operacao op = new Operacao(
-        			  date.get(Calendar.DAY_OF_MONTH),
-        			  date.get(Calendar.MONTH) + 1,
-        			  date.get(Calendar.YEAR),
-        			  date.get(Calendar.HOUR),
-        			  date.get(Calendar.MINUTE),
-        			  date.get(Calendar.SECOND),
-        			  conta.getNumero(),
-        			  conta.getStatus(),
-        			  valor,
-        			  1);
-              operacoes.add(op);        	  
-        	  tfSaldo.setText(""+conta.getSaldo());
-        	  operacoesConta.add(op);
-				tfSaldo.setText(""+conta.getSaldo());
-				
+			  fachada.retirada(valor, date.get(Calendar.DAY_OF_MONTH),
+			  date.get(Calendar.MONTH) + 1,
+			  date.get(Calendar.YEAR),
+			  date.get(Calendar.HOUR),
+			  date.get(Calendar.MINUTE),
+			  date.get(Calendar.SECOND),
+			  1);  
+				tfSaldo.setText(""+fachada.getSaldo());
 			  }
 			  catch(NumberFormatException ex) {
   				Alert alert = new Alert(AlertType.WARNING);
@@ -178,13 +151,8 @@ public class TelaOperacoes
 		});
 		
 		btnEstatistica.setOnAction(e -> {
-			List list = new ArrayList<Operacao>();
-			for (Operacao op : operacoesConta)
-			{
-				list.add(op);
-			}
 			Calendar date = Calendar.getInstance();
-			TelaEstatistica telEst = new TelaEstatistica(conta, list, mainStage, cenaOperacoes, date.get(Calendar.MONTH) + 1, date.get(Calendar.YEAR));
+			TelaEstatistica telEst = new TelaEstatistica(conta, fachada.operacoesConta(), mainStage, cenaOperacoes, date.get(Calendar.MONTH) + 1, date.get(Calendar.YEAR), fachada);
 			Scene cena = telEst.getTelaEstatistica();
 			mainStage.setScene(cena);
 		});

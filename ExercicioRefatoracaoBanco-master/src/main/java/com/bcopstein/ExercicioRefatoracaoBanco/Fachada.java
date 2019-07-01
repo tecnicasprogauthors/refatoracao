@@ -14,6 +14,7 @@ public class Fachada
     private Operacoes operacoes;
     private Validacoes validacoes;
     private int numContaAtual;
+    private ObservableList<Operacao> operacoesConta;
 
     private Fachada(Persistencia pers)
     {
@@ -22,7 +23,7 @@ public class Fachada
         validacoes = new Validacoes();
     }
 
-    public static Fachada getIntance()
+    public static Fachada getInstance()
     {
         if(instance == null) instance = new Fachada(Persistencia.getInstance());
         return instance;
@@ -31,28 +32,34 @@ public class Fachada
     public void setContaAtual(int num)
     {
         numContaAtual = num;
+        operacoesConta = FXCollections.observableArrayList(operacoes.operacoesConta(numContaAtual));
     }
 
-    public void deposito(double valor, int dia, int mes, int ano, int hora, int minuto, int segundo, int statusConta,
-    double valorOperacao, int tipoOperacao)
+    public void deposito(double valor, int dia, int mes, int ano, int hora, int minuto, int segundo, int tipoOperacao)
     {
+        if (!validacoes.deposito(valor)) return;
         contas.deposito(valor, dia, numContaAtual);
-        operacoes.newOp(dia, mes, ano, hora, minuto, segundo, numContaAtual, statusConta, valorOperacao, tipoOperacao);
+        operacoes.newOp(dia, mes, ano, hora, minuto, segundo, numContaAtual, contas.getStatus(numContaAtual), valor, tipoOperacao, operacoesConta);
     }
 
-    public void retirada(double valor, int dia, int mes, int ano, int hora, int minuto, int segundo, int statusConta,
-    double valorOperacao, int tipoOperacao)
+    public void retirada(double valor, int dia, int mes, int ano, int hora, int minuto, int segundo, int tipoOperacao)
     {
-        contas.deposito(valor, dia, numContaAtual);
-        operacoes.newOp(dia, mes, ano, hora, minuto, segundo, numContaAtual, statusConta, valorOperacao, tipoOperacao);
+        if (!validacoes.retirada(valor, contas.getSaldo(numContaAtual), contas.getLimiteAtual(numContaAtual))) return;
+        contas.retirada(valor, dia, numContaAtual);
+        operacoes.newOp(dia, mes, ano, hora, minuto, segundo, numContaAtual, contas.getStatus(numContaAtual), valor, tipoOperacao, operacoesConta);
     }
 
-    public ListView<Operacao> extrato()
+    public ObservableList<Operacao> extrato()
     {
-        return new ListView<Operacao>(FXCollections.observableArrayList(operacoes.operacoesConta(numContaAtual)));
+        return operacoesConta;
     }
 
-    private double getSalarioMedio(int mes, int ano)
+    public List<Operacao> operacoesConta()
+    {
+        return operacoes.operacoesConta(numContaAtual);
+    }
+
+    public double getSalarioMedio(int mes, int ano)
     {
         List<Operacao> ops = new ArrayList<Operacao>();
         double saldoPrimeiroDia = 0;
@@ -67,18 +74,15 @@ public class Fachada
         }
         double soma = 0;
         double aux = saldoPrimeiroDia;
-        int j = 0;
-        Operacao op = null;
-        if (!ops.isEmpty()) op = ops.get(j);
         for (int i = 1; i <= 30; i++)
         {
-            while (op != null && op.getDia() == i)
+            for(Operacao op : ops)
             {
-                if (op.getTipoOperacao() == op.DEBITO) aux -= op.getValorOperacao();
-                else aux += op.getValorOperacao();
-                j++;
-                if (j == ops.size()) break;
-                op = ops.get(j);
+                if (op.getDia() == i)
+                {
+                    if (op.getTipoOperacao() == op.DEBITO) aux -= op.getValorOperacao();
+                    else aux += op.getValorOperacao();
+                }
             }
             soma += aux;
         }
@@ -136,9 +140,47 @@ public class Fachada
         {
             if (op.getMes() == mes && op.getAno() == ano) 
             {
-                if (op.getTipoOperacao() == op.CREDITO)quantidadeDebitos++;
+                if (op.getTipoOperacao() == op.DEBITO)quantidadeDebitos++;
             }
         }
         return quantidadeDebitos;
+    }
+
+    public String getCorrentista()
+    {
+        return contas.getCorrentista(numContaAtual);
+    }
+
+    public String getStrStatus()
+    {
+        return contas.getStrStatus(numContaAtual);
+    }
+
+    public double getLimiteRetiradaDiaria()
+    {
+        return contas.getLimRetiradaDiaria(numContaAtual);
+    }
+
+    public double getLimiteAtual()
+    {
+        return contas.getLimiteAtual(numContaAtual);
+    }
+
+    public void save()
+    {
+        contas.save();
+        operacoes.save();
+    }
+
+    public boolean existeConta(int num)
+    {
+        boolean aux = contas.existeConta(num);
+        if (!aux) throw new NumberFormatException("Conta invalida");
+        return aux;
+    }
+
+    public void validaData(int mes, int ano)
+    {
+        validacoes.validaData(mes, ano);
     }
 }

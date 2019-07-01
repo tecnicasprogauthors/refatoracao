@@ -7,34 +7,27 @@ import javafx.stage.Stage;
 
 
 public class App extends Application {
-	private Persistencia persistencia;
-	private Map<Integer,Conta> contas;
-	private List<Operacao> operacoes;
-	
-	private TelaEntrada telaEntrada;
+    private TelaEntrada telaEntrada;
+    private Fachada fachada;
 	
     @Override
     public void start(Stage primaryStage) {
-    	persistencia = Persistencia.getInstance();
-        contas = persistencia.loadContas();    	
-    	operacoes = persistencia.loadOperacoes();
-    	
+    	fachada = Fachada.getInstance();
     	primaryStage.setTitle("$$ Banco NOSSA GRANA $$");
 
-    	telaEntrada = new TelaEntrada(primaryStage, contas, operacoes); 
+    	telaEntrada = new TelaEntrada(primaryStage, fachada); 
 
         primaryStage.setScene(telaEntrada.getTelaEntrada());
         primaryStage.show();
     }
     
-    @Override
-    public void stop() {
-        persistencia.saveContas(contas.values());
-        persistencia.saveOperacoes(operacoes);
-    }
-    
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void stop() {
+        fachada.save();
     }
 }
 

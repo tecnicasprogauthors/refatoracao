@@ -28,6 +28,11 @@ public class Contas
     	{
 		return contas.get(numero).getStatus();
 	}
+
+	public String getStrStatus(int numero)
+	{
+		return contas.get(numero).getStrStatus();
+	}
 	
 	public double getLimRetiradaDiaria(int numero) 
 	{
@@ -47,5 +52,15 @@ public class Contas
 	public double getLimiteAtual(int numero)
 	{
         	return contas.get(numero).getLimiteAtual();
+	}
+
+    public void save() {
+        pers.saveContas(contas.values());
+	}
+	
+	public boolean existeConta(int num)
+	{
+		if (contas.get(num) == null) return false;
+		return true;
 	}
 }

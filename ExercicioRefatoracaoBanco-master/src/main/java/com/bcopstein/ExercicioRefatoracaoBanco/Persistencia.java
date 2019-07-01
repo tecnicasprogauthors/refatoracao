@@ -35,7 +35,6 @@ public class Persistencia
     	
         String currDir = Paths.get("").toAbsolutePath().toString();
         String nameComplete = currDir+"\\"+NomeBDContas;
-        //System.out.println(nameComplete);
         Path path2 = Paths.get(nameComplete); 
         try (Scanner sc = new Scanner(Files.newBufferedReader(path2, Charset.defaultCharset()))){ 
            sc.useDelimiter("[;\n]"); // separadores: ; e nova linha 

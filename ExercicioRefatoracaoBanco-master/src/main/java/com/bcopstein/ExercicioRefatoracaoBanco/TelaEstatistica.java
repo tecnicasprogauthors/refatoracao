@@ -24,11 +24,13 @@ import javafx.stage.Stage;
 
 public class TelaEstatistica
 {
-    private Conta conta;
+    private int conta;
     private List<Operacao> operacoes;
     private Stage mainStage;
     private Scene cenaEstatistica;
     private Scene cenaOperacoes;
+    private Fachada fachada;
+    
     private int mesAtual;
     private int anoAtual;
 
@@ -45,12 +47,13 @@ public class TelaEstatistica
     private Label quantCreditos = new Label();
 
 
-    public TelaEstatistica (Conta conta, List<Operacao> operacoes, Stage mainStage, Scene cenaOperacoes, int mes, int ano)
+    public TelaEstatistica (int conta, List<Operacao> operacoes, Stage mainStage, Scene cenaOperacoes, int mes, int ano, Fachada fachada)
     {
         this.conta = conta;
         this.operacoes = operacoes;
         this.mainStage = mainStage;
         this.cenaOperacoes = cenaOperacoes;
+        this.fachada = fachada;
         mesAtual = mes;
         anoAtual = ano;
         quantDebito = 0;
@@ -66,9 +69,8 @@ public class TelaEstatistica
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-        System.out.println(mesAtual +""+ anoAtual);
 
-        String dadosCorr = conta.getNumero()+" : "+conta.getCorrentista();
+        String dadosCorr = conta+" : "+fachada.getCorrentista();
         Text scenetitle = new Text(dadosCorr);
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
@@ -103,10 +105,8 @@ public class TelaEstatistica
 
         grid.add(creditos, 0, 4);
 
-        Text salMedio = new Text("Salario medio: " + getSalarioMedio(mesAtual, anoAtual));
+        Text salMedio = new Text("Salario medio: " + fachada.getSalarioMedio(mesAtual, anoAtual));
         grid.add(salMedio, 0, 5);
-
-        Label salarioMedio = new Label(""+ getSalarioMedio(mesAtual, anoAtual));
 
         Label mesSel = new Label("Mes atual: " + mesAtual);
         Label anoSel = new Label("Ano atual: " + anoAtual);
@@ -127,9 +127,8 @@ public class TelaEstatistica
             try
             {
                 int mes = Integer.parseInt(tfMes.getText());
-                if (mes < 1 || mes > 12) throw new NumberFormatException("Mes invalido");
                 int ano = Integer.parseInt(tfAno.getText());
-                if (ano > date.get(Calendar.YEAR) || ano < 1) throw new NumberFormatException("Ano inválido");
+                fachada.validaData(mes, ano);
                 mesAtual = mes;
                 anoAtual = ano;
                 mesSel.setText("Mes Atual: " + mesAtual);
@@ -158,62 +157,9 @@ public class TelaEstatistica
 
     private void valorOperacoes(int mes, int ano)
     {
-        valorDebitos = 0;
-        quantDebito = 0;
-        valorCreditos = 0;
-        quantCredito = 0;
-        for (Operacao op : operacoes)
-        {
-            if (op.getMes() == mes && op.getAno() == ano) 
-            {
-                if (op.getTipoOperacao() == op.DEBITO)
-                {
-                    valorDebitos += op.getValorOperacao();
-                    quantDebito++;
-                }
-                else
-                {
-                    valorCreditos += op.getValorOperacao();
-                    quantCredito++;
-                }
-            }
-        }
-        totDebitos.setText("Total de debitos: " + valorDebitos);
-        quantDebitos.setText("Quantidade de debitos: " + quantDebito);
-        totCreditos.setText("Total de creditos: " + valorCreditos);
-        quantCreditos.setText("Quantidade de creditos: " + quantCredito);
-    }
-
-    private double getSalarioMedio(int mes, int ano)
-    {
-        List<Operacao> ops = new ArrayList<Operacao>();
-        double saldoPrimeiroDia = 0;
-        for (Operacao op : operacoes)
-        {
-            if (op.getMes() == mes && op.getAno() == ano)ops.add(op);
-            else if (op.getAno() < ano || (op.getMes() < mes && op.getAno() == ano))
-            {
-                if (op.getTipoOperacao() == op.DEBITO) saldoPrimeiroDia -= op.getValorOperacao();
-                else saldoPrimeiroDia += op.getValorOperacao();
-            }
-        }
-        double soma = 0;
-        double aux = saldoPrimeiroDia;
-        int j = 0;
-        Operacao op = null;
-        if (!ops.isEmpty()) op = ops.get(j);
-        for (int i = 1; i <= 30; i++)
-        {
-            while (op != null && op.getDia() == i)
-            {
-                if (op.getTipoOperacao() == op.DEBITO) aux -= op.getValorOperacao();
-                else aux += op.getValorOperacao();
-                j++;
-                if (j == ops.size()) break;
-                op = ops.get(j);
-            }
-            soma += aux;
-        }
-        return soma/30;
+        totDebitos.setText("Total de debitos: " + fachada.totalDebitos(mes, ano));
+        quantDebitos.setText("Quantidade de debitos: " + fachada.quantidadeDebitos(mes, ano));
+        totCreditos.setText("Total de creditos: " + fachada.totalCreditos(mes, ano));
+        quantCreditos.setText("Quantidade de creditos: " + fachada.quantidadeCreditos(mes, ano));
     }
 } 

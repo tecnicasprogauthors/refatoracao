@@ -2,6 +2,8 @@ package com.bcopstein.ExercicioRefatoracaoBanco;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.collections.ObservableList;
+
 public class Operacoes
 {
     private List<Operacao> operacoes;
@@ -14,9 +16,11 @@ public class Operacoes
     }
 
     public void newOp(int dia, int mes, int ano, int hora, int minuto, int segundo, int numeroConta, int statusConta,
-    double valorOperacao, int tipoOperacao)
+    double valorOperacao, int tipoOperacao, ObservableList<Operacao> list)
     {
-        operacoes.add(new Operacao(dia, mes, ano, hora, minuto, segundo, numeroConta, statusConta, valorOperacao, tipoOperacao));
+        Operacao op = new Operacao(dia, mes, ano, hora, minuto, segundo, numeroConta, statusConta, valorOperacao, tipoOperacao);
+        operacoes.add(op);
+        list.add(op);
     }
 
     public List<Operacao> operacoesConta(int numero)
@@ -26,5 +30,9 @@ public class Operacoes
         .filter(op -> op.getNumeroConta() == numero)
         .collect(Collectors.toList())
         ;
+    }
+
+    public void save() {
+        pers.saveOperacoes(operacoes);
     }
 }

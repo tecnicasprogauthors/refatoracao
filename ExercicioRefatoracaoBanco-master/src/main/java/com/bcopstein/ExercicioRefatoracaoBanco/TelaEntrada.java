@@ -23,15 +23,13 @@ import javafx.stage.Stage;
 public class TelaEntrada {
 	private Stage mainStage; 
 	private Scene cenaEntrada; 
-	private Map<Integer, Conta> contas; 
-	private List<Operacao> operacoes; 
+	private Fachada fachada;
 
 	private TextField tfContaCorrente;
 
-	public TelaEntrada(Stage anStage, Map<Integer, Conta> lstContas, List<Operacao> operacoes) {
+	public TelaEntrada(Stage anStage, Fachada fachada) {
 		mainStage = anStage;
-		contas = lstContas;
-		this.operacoes = operacoes;
+		this.fachada = fachada;
 	}
 
 	public Scene getTelaEntrada() {
@@ -40,7 +38,6 @@ public class TelaEntrada {
 		grid.setHgap(10);
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
-		// grid.setGridLinesVisible(true);
 
 		Text scenetitle = new Text("Bem vindo ao Banco Nossa Grana");
 		scenetitle.setId("welcome-text");
@@ -73,11 +70,8 @@ public class TelaEntrada {
 		btnIn.setOnAction(e -> {
 			try {
 				Integer nroConta = Integer.parseInt(tfContaCorrente.getText());
-				Conta conta = contas.get(nroConta);
-				if (conta == null) {
-					throw new NumberFormatException("Conta invalida");
-				}
-				TelaOperacoes toper = new TelaOperacoes(mainStage, cenaEntrada,conta,operacoes);
+				fachada.existeConta(nroConta);
+				TelaOperacoes toper = new TelaOperacoes(mainStage, cenaEntrada,nroConta,fachada);
 				Scene scene = toper.getTelaOperacoes();
 				mainStage.setScene(scene);
 			} 

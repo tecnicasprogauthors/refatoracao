@@ -1,43 +1,46 @@
 package com.bcopstein.ExercicioRefatoracaoBanco;
 public class Conta 
 {
-	public final int SILVER = 0;
-	public final int GOLD = 1;
-	public final int PLATINUM = 2;
-	public final int LIM_SILVER_GOLD = 50000;
-	public final int LIM_GOLD_PLATINUM = 200000;
-	public final int LIM_PLATINUM_GOLD = 100000;
-	public final int LIM_GOLD_SILVER = 25000;
-	public final double LIMRET_SILVER = 10000.0;
-	public final double LIMRET_GOLD = 100000.0;
-	public final double LIMRET_PLATINUM = 500000.0;
+	//public final int SILVER = 0;
+	//public final int GOLD = 1;
+	//public final int PLATINUM = 2;
+	//public final int LIM_SILVER_GOLD = 50000;
+	//public final int LIM_GOLD_PLATINUM = 200000;
+	//public final int LIM_PLATINUM_GOLD = 100000;
+	//public final int LIM_GOLD_SILVER = 25000;
+	//public final double LIMRET_SILVER = 10000.0;
+	//public final double LIMRET_GOLD = 100000.0;
+	//public final double LIMRET_PLATINUM = 500000.0;
 
 	private int numero;
 	private String correntista;
 	private double saldo;
-	private int status;
 	private double limiteMaximo;
 	private double limiteAtual;
 	private int diaUltOperacao;
+	private StateConta state;
+	private StateFactory factory;
 
-	public Conta(int umNumero, String umNome) {
+	public Conta(int umNumero, String umNome, int state) {
 		numero = umNumero;
 		correntista = umNome;
 		saldo = 0.0;
-		status = SILVER;
+		diaUltOperacao = 0;
+		factory = new StateFactory();
+		this.state = factory.novaConta(state);
 		limiteMaximo = getLimRetiradaDiaria();
 		limiteAtual = limiteMaximo;
-		diaUltOperacao = 0;
 	}
 	
-	public Conta(int umNumero, String umNome,double umSaldo, int umStatus) {
+	public Conta(int umNumero, String umNome, double umSaldo, int state) {
 		numero = umNumero;
 		correntista = umNome;
 		saldo = umSaldo;
-		status = umStatus;
+		diaUltOperacao = 0;
+		factory = new StateFactory();
+		this.state = factory.novaConta(state);
 		limiteMaximo = getLimRetiradaDiaria();
 		limiteAtual = limiteMaximo;
-		diaUltOperacao = 0;
 	}
 	
 	public double getSaldo() {
@@ -53,50 +56,22 @@ public class Conta
 	}
 	
 	public int getStatus() {
-		return status;
+		return state.getStatus();
 	}
 	
 	public String getStrStatus() {
-		switch(status) {
-		case SILVER:  return "Silver";
-		case GOLD:  return "Gold";
-		case PLATINUM:  return "Platinum";
-		default: return "none";
-		}
+		return state.getStrStatus();
 	}
 	
 	public double getLimRetiradaDiaria() 
 	{
-		switch(status) {
-		case SILVER:  return LIMRET_SILVER;
-		case GOLD:  return LIMRET_GOLD;
-		case PLATINUM:  return LIMRET_PLATINUM;
-		default: return 0.0;
-		}
+		return state.getLimRetiradaDiaria();
 	}
 	
 	public void deposito(double valor, int dia) 
 	{
-		if (status == SILVER) 
-		{
-			saldo += valor;
-			if (saldo >= LIM_SILVER_GOLD) 
-			{
-				status = GOLD;
-			}
-		} 
-		else if (status == GOLD) 
-		{
-			saldo += valor * 1.01;
-			if (saldo >= LIM_GOLD_PLATINUM) 
-			{
-				status = PLATINUM;
-			}
-		} 
-		else if (status == PLATINUM) 
-		{
-			saldo += valor * 1.025;
-		}
+		saldo += state.deposito(valor);
+		state = factory.deposito(saldo, state);
 		limiteMaximo = getLimRetiradaDiaria();
 		diaUltOperacao = dia;
 	}
@@ -109,22 +84,9 @@ public class Conta
 		if (saldo - valor < 0.0 || valor > limiteAtual) return;
 		else 
 		{
-			saldo = saldo - valor;
+			saldo -= valor;
 			limiteAtual -= valor;
-			if (status == PLATINUM) 
-			{
-				if (saldo < LIM_PLATINUM_GOLD) 
-				{
-					status = GOLD;
-				}
-			} 
-			else if (status == GOLD) 
-			{
-				if (saldo < LIM_GOLD_SILVER) 
-				{
-					status = SILVER;
-				}
-			}
+			state = factory.retirada(saldo, state);
 		}
 	}
 
@@ -135,7 +97,7 @@ public class Conta
 
 	@Override
 	public String toString() {
-		return "Conta [numero=" + numero + ", correntista=" + correntista + ", saldo=" + saldo + ", status=" + status
+		return "Conta [numero=" + numero + ", correntista=" + correntista + ", saldo=" + saldo + ", status=" + getStatus()
 				+ "]";
 	}
 }
