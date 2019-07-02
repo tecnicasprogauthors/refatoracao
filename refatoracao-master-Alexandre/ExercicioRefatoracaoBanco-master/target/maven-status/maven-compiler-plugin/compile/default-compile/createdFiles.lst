@@ -1,0 +1,17 @@
+com\bcopstein\ExercicioRefatoracaoBanco\StateGold.class
+com\bcopstein\ExercicioRefatoracaoBanco\Validacoes.class
+com\bcopstein\ExercicioRefatoracaoBanco\Contas.class
+com\bcopstein\ExercicioRefatoracaoBanco\StateFactory.class
+com\bcopstein\ExercicioRefatoracaoBanco\App.class
+com\bcopstein\ExercicioRefatoracaoBanco\Fachada.class
+com\bcopstein\ExercicioRefatoracaoBanco\Persistencia.class
+com\bcopstein\ExercicioRefatoracaoBanco\TelaEntrada$1.class
+com\bcopstein\ExercicioRefatoracaoBanco\Operacoes.class
+com\bcopstein\ExercicioRefatoracaoBanco\Operacao.class
+com\bcopstein\ExercicioRefatoracaoBanco\TelaEstatistica.class
+com\bcopstein\ExercicioRefatoracaoBanco\TelaOperacoes.class
+com\bcopstein\ExercicioRefatoracaoBanco\StateSilver.class
+com\bcopstein\ExercicioRefatoracaoBanco\TelaEntrada.class
+com\bcopstein\ExercicioRefatoracaoBanco\Conta.class
+com\bcopstein\ExercicioRefatoracaoBanco\StateConta.class
+com\bcopstein\ExercicioRefatoracaoBanco\StatePlatinum.class
